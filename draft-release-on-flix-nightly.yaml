@@ -11,9 +11,15 @@ jobs:
         with:
           java-version: 17
           distribution: zulu
+      - uses: SebRollen/toml-action@v1.0.2
+        id: read_flix_version
+        with:
+          file: 'flix.toml'
+          field: 'package.flix'
       - run: |
-          # download Flix JAR
-          curl -L https://github.com/flix/flix/releases/download/v${{steps.read_flix_version.outputs.value}}/flix.jar > flix.jar
+          # download the latest nightly Flix JAR
+          url="https://flix.dev/nightly/flix-latest.jar"
+          curl -L -f "$url" > flix.jar
 
           # run tests
           java -jar flix.jar test --github-key ${{ github.token }}
