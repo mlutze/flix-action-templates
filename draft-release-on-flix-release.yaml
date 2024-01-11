@@ -21,7 +21,7 @@ jobs:
           curl -L https://github.com/flix/flix/releases/download/v${{steps.read_flix_version.outputs.value}}/flix.jar > flix.jar
 
           # run tests
-          java -jar flix.jar test --github-key ${{ github.token }}
+          java -jar flix.jar test --github-token ${{ github.token }}
 
           # Build the package
           java -jar flix.jar build-pkg
