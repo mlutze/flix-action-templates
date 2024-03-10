@@ -1,0 +1,57 @@
+name: Test Flix
+
+on:
+  workflow_call:
+    inputs:
+      platform:
+        default: "ubuntu-latest"
+        required: false
+        type: string
+      flix:
+        description: "Flix version. Options: 'latest', 'release', 'master', 'toml', 'vX.X.X'."
+        default: "toml"
+        required: false
+        type: string
+      commit:
+        description: "Local repository commit. Options: 'branch', 'release'."
+        default: "branch"
+        required: false
+        type: string
+    secrets: inherit
+
+jobs:
+  test:
+    runs-on: ${{ inputs.platform }}
+    steps:
+      - name: "Check out local branch"
+        with:
+          fetch-depth: 0 # set to 0 so we download all the tags
+        uses: actions/checkout@V2
+      - if: ${{ inputs.commit == "release" }}
+        name: "Check out latest release"
+        run: |
+          tag=$(git describe --tags --abbrev=0)
+          git checkout "$tag"
+
+      - name: "Install Java"
+        uses: actions/setup-java@v2.5.0
+        with:
+          java-version: 21
+          distribution: zulu
+
+      #
+      # Depending on the requested Flix version,
+      # we decide what JAR to download to ./flix.jar
+      #
+      - if: ${{ inputs.flix == "nightly" }}
+        name: "Download nightly Flix JAR"
+        run: |
+          url="https://flix.dev/nightly/flix-latest.jar"
+          curl -L -f "$url" > flix.jar
+
+      - if: ${{ inputs.flix == "release" }}
+        name: "Download latest released Flix JAR"
+      
+      - name: "Run tests"
+        run: |
+          java -jar flix.jar test --github-key ${{ github.token }}
