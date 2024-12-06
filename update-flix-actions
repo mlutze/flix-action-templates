@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+# Go through all the actions in the current directory.
+for action in *.yaml; do
+    case "$(head "$action" -n 1)" in
+        # If it's an action with the UPDATE_VIA_SCRIPT header, then we try to update it.
+        *UPDATE_VIA_SCRIPT*)
+        echo "updating $action"
+        curl -i "https://api.github.com/repos/mlutze/flix-action-templates/$action" --header "Accept: application/vnd.github.3.raw" > "$action"
+        ;;
+        *)
+        # Otherwise skip it.
+        ;;
+    esac
+done
